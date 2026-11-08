@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Detalle del producto</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+</head>
+<body>
+<header class="barra">
+    <span class="barra__proyecto" th:text="${nombreProyecto}">Proyecto</span>
+    <span class="barra__autor" th:text="'Autor: ' + ${autor}">Autor</span>
+</header>
+
+<main class="contenedor">
+    <h1>Detalle del producto</h1>
+
+    <section class="tarjeta" th:if="${encontrado}">
+        <h2 th:text="${producto.nombre}">Nombre</h2>
+        <dl>
+            <dt>ID</dt>
+            <dd th:text="${producto.id}">1</dd>
+            <dt>Categoría</dt>
+            <dd th:text="${producto.categoria}">Categoría</dd>
+            <dt>Precio</dt>
+            <dd th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 'COMMA', 2, 'POINT')}">$0.00</dd>
+        </dl>
+    </section>
+
+    <section class="tarjeta tarjeta--aviso" th:unless="${encontrado}">
+        <p th:text="'No existe un producto con el id ' + ${id} + '.'">No existe el producto.</p>
+    </section>
+
+    <p><a th:href="@{/productos}">Volver a la lista</a></p>
+</main>
+</body>
+</html>

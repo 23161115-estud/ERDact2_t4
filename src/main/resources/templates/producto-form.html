@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Nuevo producto</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+</head>
+<body>
+<header class="barra">
+    <span class="barra__proyecto" th:text="${nombreProyecto}">Proyecto</span>
+    <span class="barra__autor" th:text="'Autor: ' + ${autor}">Autor</span>
+</header>
+
+<main class="contenedor">
+    <h1>Nuevo producto</h1>
+
+    <form class="formulario" th:action="@{/productos}" th:object="${producto}" method="post">
+        <div class="campo">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" th:field="*{nombre}" required="required" maxlength="60"/>
+        </div>
+
+        <div class="campo">
+            <label for="precio">Precio</label>
+            <input type="number" id="precio" th:field="*{precio}" step="0.01" min="0" required="required"/>
+        </div>
+
+        <div class="campo">
+            <label for="categoria">Categoría</label>
+            <select id="categoria" th:field="*{categoria}" required="required">
+                <option value="">Selecciona una categoría</option>
+                <option th:each="c : ${categorias}" th:value="${c}" th:text="${c}">Categoría</option>
+            </select>
+        </div>
+
+        <div class="acciones">
+            <button type="submit" class="boton">Guardar producto</button>
+            <a th:href="@{/productos}">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

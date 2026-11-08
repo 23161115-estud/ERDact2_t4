@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Productos</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+</head>
+<body>
+<header class="barra">
+    <span class="barra__proyecto" th:text="${nombreProyecto}">Proyecto</span>
+    <span class="barra__autor" th:text="'Autor: ' + ${autor}">Autor</span>
+</header>
+
+<main class="contenedor">
+    <div class="encabezado">
+        <h1>Productos</h1>
+        <a class="boton" th:href="@{/productos/nuevo}">Nuevo producto</a>
+    </div>
+
+    <form class="filtro" th:action="@{/productos}" method="get">
+        <label for="categoria">Categoría</label>
+        <select id="categoria" name="categoria">
+            <option value="">Todas</option>
+            <option th:each="c : ${categorias}"
+                    th:value="${c}"
+                    th:text="${c}"
+                    th:selected="${c == categoriaSeleccionada}">Categoría</option>
+        </select>
+        <button type="submit" class="boton boton--secundario">Filtrar</button>
+        <a th:if="${!categoriaSeleccionada.isEmpty()}" th:href="@{/productos}">Quitar filtro</a>
+    </form>
+
+    <p class="resumen" th:text="${productos.size()} + ' producto(s) encontrado(s)'">0 productos</p>
+
+    <table class="tabla" th:if="${!productos.isEmpty()}">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Detalle</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${productos}">
+            <td th:text="${p.id}">1</td>
+            <td th:text="${p.nombre}">Nombre</td>
+            <td th:text="${p.categoria}">Categoría</td>
+            <td th:text="'$' + ${#numbers.formatDecimal(p.precio, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+            <td><a th:href="@{/productos/{id}(id=${p.id})}">Ver detalle</a></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p class="vacio" th:if="${productos.isEmpty()}">No hay productos en esta categoría.</p>
+</main>
+</body>
+</html>

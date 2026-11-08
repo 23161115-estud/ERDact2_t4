@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Producto guardado</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}"/>
+</head>
+<body>
+<header class="barra">
+    <span class="barra__proyecto" th:text="${nombreProyecto}">Proyecto</span>
+    <span class="barra__autor" th:text="'Autor: ' + ${autor}">Autor</span>
+</header>
+
+<main class="contenedor">
+    <h1>Producto guardado</h1>
+    <p>Estos son los datos recibidos con <code>@ModelAttribute</code>:</p>
+
+    <section class="tarjeta">
+        <dl>
+            <dt>ID asignado</dt>
+            <dd th:text="${producto.id}">1</dd>
+            <dt>Nombre</dt>
+            <dd th:text="${producto.nombre}">Nombre</dd>
+            <dt>Categoría</dt>
+            <dd th:text="${producto.categoria}">Categoría</dd>
+            <dt>Precio</dt>
+            <dd th:text="'$' + ${#numbers.formatDecimal(producto.precio, 1, 'COMMA', 2, 'POINT')}">$0.00</dd>
+        </dl>
+    </section>
+
+    <p>
+        <a class="boton" th:href="@{/productos}">Ver la lista</a>
+        <a th:href="@{/productos/nuevo}">Agregar otro</a>
+    </p>
+</main>
+</body>
+</html>

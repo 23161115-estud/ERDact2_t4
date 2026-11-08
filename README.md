@@ -1,58 +1,47 @@
-# ERDact1_t4
+# ERDact2_t4
 
-API REST creada con **Java y Spring Boot** para la Actividad 1 del Tema 4. Tiene dos controladores con cinco endpoints que responden texto, números, objetos y listas en JSON. Se probó primero en local y después se desplegó en un VPS de Vultr, corriendo en un puerto propio.
+Segundo proyecto con **Java y Spring Boot**. Es una copia independiente del proyecto de la Actividad 1 a la que se le agregó el patrón **MVC con Thymeleaf**: vistas HTML generadas en el servidor, una clase **DTO**, el manejo de parámetros con `@ModelAttribute`, `@RequestParam` y `@PathVariable`, la lectura de propiedades con `@Value` y un endpoint **POST** que recibe y devuelve JSON, probado en Postman.
 
 **Autor:** Ruiz Durán Emiliano
 
 ## Qué hace el proyecto
 
-La aplicación levanta un servidor web embebido (Tomcat) y atiende peticiones `GET`. Cada endpoint demuestra una forma distinta de responder:
+Es un pequeño catálogo de productos con dos formas de usarlo:
 
-| Controlador | Endpoint | Qué devuelve | Tipo de respuesta |
-|---|---|---|---|
-| `ProyectoController` | `GET /api/proyecto` | Nombre del proyecto, autor y versión | Objeto JSON |
-| `ProyectoController` | `GET /api/saludo/{nombre}` | Un saludo personalizado | Texto |
-| `PerfilController` | `GET /api/perfil` | Datos del autor | Objeto JSON |
-| `PerfilController` | `GET /api/materias` | Un listado de materias | Lista JSON |
-| `PerfilController` | `GET /api/suma?a=2&b=3` | La suma de dos números | Número |
+- **Páginas web (MVC):** lista de productos, filtro por categoría, detalle de un producto y formulario para agregar uno nuevo.
+- **API REST:** lista de productos y alta de un producto enviando JSON.
 
-### Ejemplos de respuesta
+Los datos viven en memoria: al reiniciar el servidor se pierden los productos agregados.
 
-`GET /api/proyecto`
-```json
-{"proyecto":"ERDact1_t4","autor":"Ruiz Durán Emiliano","version":"1.0"}
+## Endpoints
+
+| Método y ruta | Qué hace | Tema aplicado |
+|---|---|---|
+| `GET /productos` | Lista todos los productos | `Model`, `th:each` |
+| `GET /productos?categoria=Libros` | Filtra la lista por categoría | `@RequestParam` |
+| `GET /productos/{id}` | Muestra el detalle de un producto | `@PathVariable` |
+| `GET /productos/nuevo` | Muestra el formulario | `th:object`, `th:field` |
+| `POST /productos` | Recibe el formulario y muestra el resultado | `@ModelAttribute` |
+| `GET /api/productos` | Lista los productos en JSON | `@RestController` |
+| `POST /api/productos` | Recibe un producto en JSON y lo devuelve con su id | `@RequestBody` |
+| `GET /api/proyecto`, `/api/perfil`, `/api/materias`, `/api/saludo/{nombre}`, `/api/suma` | Endpoints de la Actividad 1 (se conservan) | `@RestController` |
+
+## Arquitectura MVC
+
+```
+Navegador  ->  Controlador  ->  Modelo (DTO y servicio)
+                    |
+                    v
+                  Vista (plantilla Thymeleaf)  ->  HTML para el navegador
 ```
 
-`GET /api/saludo/Ana`
-```
-Hola, Ana. Bienvenido a RDEact1_t4.
-```
-
-`GET /api/perfil`
-```json
-{"nombre":"Ruiz Durán Emiliano","carrera":"Ingeniería en Sistemas Computacionales","semestre":7,"activo":true}
-```
-
-`GET /api/materias`
-```json
-[{"nombre":"Programación Web","creditos":5},{"nombre":"Programación Lógica","creditos":4},{"nombre":"Conmutación de redes","creditos":5},{"nombre":"Taller de investigación","creditos":4}]
-```
-
-`GET /api/suma?a=2&b=3`
-```
-5
-```
-
-## Tecnologías y entorno
-
-| Herramienta | Versión |
+| Parte | Qué es en este proyecto |
 |---|---|
-| Java (JDK Eclipse Temurin) | 21 |
-| Spring Boot | 4.1.2 (con la dependencia Spring Web) |
-| Servidor embebido | Apache Tomcat 11 |
-| Gestor de construcción | Maven (con Maven Wrapper `mvnw`) |
-| IDE | [IntelliJ IDEA / VS Code] |
-| Servidor | VPS de Vultr con Ubuntu |
+| **Modelo** | `ProductoDTO` (los datos) y `ProductoService` (la lista en memoria y su lógica) |
+| **Vista** | Plantillas Thymeleaf en `templates/`: `productos.html`, `producto-detalle.html`, `producto-form.html` y `producto-resultado.html` |
+| **Controlador** | `ProductoViewController`: recibe la petición, pide los datos al servicio, los guarda en el `Model` y devuelve el nombre de la vista |
+
+El controlador REST (`ProductoRestController`) no usa vistas: responde directamente JSON.
 
 ## Estructura del proyecto
 
@@ -61,95 +50,132 @@ src/main
 ├── java/com/example/demo
 │   ├── DemoApplication.java
 │   ├── controller
-│   │   ├── ProyectoController.java
-│   │   └── PerfilController.java
-│   └── model
-│       ├── ProyectoInfo.java
-│       ├── Perfil.java
-│       └── Materia.java
+│   │   ├── ProyectoController.java         (Actividad 1)
+│   │   ├── PerfilController.java           (Actividad 1)
+│   │   ├── ProductoViewController.java     (MVC, devuelve vistas)
+│   │   └── ProductoRestController.java     (REST, devuelve JSON)
+│   ├── dto
+│   │   └── ProductoDTO.java
+│   ├── model                               (Actividad 1)
+│   └── service
+│       └── ProductoService.java
 └── resources
-    └── application.properties
+    ├── application.properties
+    ├── static/css/estilos.css
+    └── templates
+        ├── productos.html
+        ├── producto-detalle.html
+        ├── producto-form.html
+        └── producto-resultado.html
 ```
 
-- **`controller`:** clases que reciben las peticiones y definen cada ruta.
-- **`model`:** clases simples (`record`) que representan los datos que se devuelven como JSON.
-- **`application.properties`:** el puerto del servidor y las propiedades propias del proyecto.
+## Tecnologías y entorno
+
+| Herramienta | Versión |
+|---|---|
+| Java (JDK Eclipse Temurin) | 21 |
+| Spring Boot | 4.1.2 (Spring Web y Thymeleaf) |
+| Maven | con Maven Wrapper `mvnw` |
+| Servidor | VPS de Vultr con Ubuntu |
 
 ## Cómo se realizó
 
-### 1. Preparar el entorno
+### 1. Duplicar el proyecto anterior
 
-1. Se instaló el **JDK 21** con `winget install EclipseAdoptium.Temurin.21.JDK`.
-2. Se comprobó con `java -version` y `javac -version`. La computadora tenía antes Java 8, que Spring Boot no admite, así que se ajustó `JAVA_HOME` y el `Path` para que Windows usara el 21.
-3. Se instaló un IDE para abrir y ejecutar el proyecto.
+1. Se copió la carpeta completa del proyecto de la Actividad 1 a una carpeta nueva, sin modificar la original.
+2. En la copia se borró la carpeta oculta `.git` (y `target`), para no mezclar los historiales, y se ejecutó `git init`.
+3. Se creó un repositorio nuevo, `RDEact2_t4`, y se subió ahí la copia. El repositorio de la Actividad 1 sigue intacto.
 
-### 2. Crear el proyecto base
+### 2. Agregar Thymeleaf
 
-Se generó en **start.spring.io** con estos datos:
+En el `pom.xml` se añadió la dependencia:
 
-| Campo | Valor |
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+```
+
+### 3. Crear el DTO y el servicio
+
+- `ProductoDTO` es una clase con `id`, `nombre`, `precio` y `categoria`, con sus getters y setters y un constructor vacío (Spring lo necesita para llenar el objeto con los datos del formulario).
+- `ProductoService` guarda seis productos de ejemplo en una lista en memoria y ofrece los métodos `listar`, `listarPorCategoria`, `buscarPorId`, `agregar` y `categorias`.
+
+### 4. Crear el controlador MVC
+
+`ProductoViewController` está anotado con `@Controller` y `@RequestMapping("/productos")`. Sus métodos devuelven el nombre de una vista:
+
+- `listar`: usa `@RequestParam` para filtrar por categoría, llena el `Model` y devuelve `productos`.
+- `detalle`: usa `@PathVariable("id")` para buscar un producto y devuelve `producto-detalle`.
+- `nuevo`: envía un `ProductoDTO` vacío al formulario.
+- `guardar`: recibe el formulario con `@ModelAttribute`, guarda el producto y devuelve `producto-resultado`.
+
+### 5. Crear las vistas con Thymeleaf
+
+Las plantillas usan estas directivas:
+
+| Directiva | Dónde se usa |
 |---|---|
-| Project | Maven |
-| Language | Java |
-| Group / Artifact | `com.example` / `demo` |
-| Packaging | Jar |
-| Java | 21 |
-| Dependencies | Spring Web |
+| `th:each` | Recorre la lista de productos en la tabla y las categorías en los selectores |
+| `th:text` | Muestra los valores del modelo |
+| `th:if` / `th:unless` | Muestra mensajes según haya o no resultados |
+| `th:href` / `th:action` | Construyen las rutas, por ejemplo `@{/productos/{id}(id=${p.id})}` |
+| `th:object` / `th:field` | Enlazan el formulario con el `ProductoDTO` |
+| `th:selected` | Deja marcada la categoría elegida en el filtro |
 
-Se descomprimió, se abrió en el IDE y se ejecutó con `.\mvnw.cmd spring-boot:run`. En la consola apareció `Tomcat started on port 8080` y `Started DemoApplication`, y en el navegador salió la página "Whitelabel Error Page" (404). Eso confirmó que el servidor funcionaba y que todavía no había rutas.
+### 6. Leer una propiedad con `@Value`
 
-### 3. Crear los controladores
+En `application.properties` se definieron `app.nombre-proyecto` y `app.autor`. El controlador las lee con `@Value` y las manda al `Model`, y todas las vistas las muestran en el encabezado.
 
-1. Se crearon los modelos `ProyectoInfo`, `Perfil` y `Materia` como `record`, que Spring convierte automáticamente a JSON.
-2. Se creó `ProyectoController` con `@RestController` y el prefijo `@RequestMapping("/api")`. Sus métodos usan `@GetMapping` para `/proyecto` y `/saludo/{nombre}` (con `@PathVariable`).
-3. Se creó `PerfilController` con `/perfil`, `/materias` y `/suma` (con `@RequestParam` para recibir `a` y `b`).
-4. En `application.properties` se definieron `app.nombre-proyecto` y `app.autor`, y `ProyectoController` los lee con `@Value`.
+### 7. Crear el endpoint POST de tipo REST
 
-### 4. Probar en local
+`ProductoRestController` usa `@RestController` y `@RequestBody` para recibir un `ProductoDTO` en JSON, y responde `201 Created` con el producto y su id. Se probó en Postman:
 
-Con el proyecto corriendo en `http://localhost:8080`, se abrieron los cinco endpoints en el navegador y se comprobó que cada uno respondía lo esperado.
-
-### 5. Empaquetar
-
-```bash
-.\mvnw.cmd clean package
+- **Petición:** `POST http://localhost:8080/api/productos`, en *Body*, *raw*, *JSON*:
+```json
+{"nombre": "Regla 30 cm", "precio": 12.5, "categoria": "Papelería"}
+```
+- **Respuesta (201 Created):**
+```json
+{"id": 7, "nombre": "Regla 30 cm", "precio": 12.5, "categoria": "Papelería"}
 ```
 
-Terminó con `BUILD SUCCESS` y generó `target/demo-0.0.1-SNAPSHOT.jar`. Se probó solo, sin el IDE:
+### 8. Compilar y desplegar en el VPS
 
+1. `.\mvnw.cmd clean package` genera `target/demo-0.0.1-SNAPSHOT.jar`.
+2. Se creó una carpeta nueva en el servidor, distinta a la de la Actividad 1: `mkdir -p ~/act2`.
+3. Se abrió un puerto distinto con `ufw allow 8084/tcp` y se subió el jar con `scp` a esa carpeta.
+4. Se ejecutó con `nohup`, dejando corriendo también la Actividad 1:
 ```bash
-java -jar target\demo-0.0.1-SNAPSHOT.jar --server.port=8085
+cd ~/act2
+nohup java -jar demo-0.0.1-SNAPSHOT.jar --server.port=8084 > app.log 2>&1 &
 ```
+5. Se comprobó que ambas actividades respondan al mismo tiempo, cada una en su puerto.
 
-### 6. Desplegar en el VPS de Vultr
+## Capturas de pantalla
 
-1. Conexión al servidor: `ssh root@IP_DEL_VPS`.
-2. Se verificó Java con `java -version` (se instala con `apt install openjdk-21-jre-headless` si falta).
-3. Se acordó el puerto con mi compañero: el mío es **8082** y el suyo es 8081. Se evitó el 8080, y el 80 y el 443 se dejaron para el servidor web.
-4. Se abrió el puerto en el firewall: `ufw allow 8082/tcp`.
-5. Se subió el jar a una carpeta propia para no mezclarlo con el de mi compañero:
-```bash
-ssh root@IP_DEL_VPS "mkdir -p ~/TUSINICIALESact1_t4"
-scp target\demo-0.0.1-SNAPSHOT.jar root@IP_DEL_VPS:~/TUSINICIALESact1_t4/
-```
-6. Se ejecutó con `nohup` para que siga corriendo al cerrar la sesión:
-```bash
-cd ~/TUSINICIALESact1_t4
-nohup java -jar demo-0.0.1-SNAPSHOT.jar --server.port=[PUERTO] > app.log 2>&1 &
-```
-7. Se verificó el log (`tail app.log`), con `curl http://localhost:8082/api/proyecto`, y desde el navegador de mi laptop.
+**Lista con `th:each`** (`/productos`)
 
-## Conceptos aplicados
+![Lista de productos](capturas/01-lista.png)
 
-| Anotación | Para qué se usa en el proyecto |
-|---|---|
-| `@SpringBootApplication` | Arranca la aplicación y activa la configuración automática |
-| `@RestController` | Marca la clase como controlador que responde datos (JSON o texto) |
-| `@RequestMapping("/api")` | Define el prefijo común de las rutas de una clase |
-| `@GetMapping` | Asocia una petición GET con un método y una ruta |
-| `@PathVariable` | Lee un valor de la ruta (`/saludo/{nombre}`) |
-| `@RequestParam` | Lee un parámetro de la URL (`?a=2&b=3`) |
-| `@Value` | Lee una propiedad desde `application.properties` |
+**Formulario con `@ModelAttribute`** (`/productos/nuevo`) y su resultado
+
+![Formulario](capturas/02-formulario.png)
+
+![Resultado del formulario](capturas/03-resultado.png)
+
+**Filtro con `@RequestParam`** (`/productos?categoria=Libros`)
+
+![Filtro por categoría](capturas/04-requestparam.png)
+
+**Detalle con `@PathVariable`** (`/productos/2`)
+
+![Detalle del producto](capturas/05-pathvariable.png)
+
+**Petición POST en Postman** (`POST /api/productos`)
+
+![POST en Postman](capturas/06-postman.png)
 
 ## Cómo ejecutarlo
 
@@ -159,22 +185,19 @@ Requisitos: JDK 21 o superior.
 .\mvnw.cmd spring-boot:run
 ```
 
-En Linux o Mac: `./mvnw spring-boot:run`. Por defecto corre en el puerto 8080. Para usar otro puerto:
-
-```bash
-.\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--server.port=8085"
-```
+En Linux o Mac: `./mvnw spring-boot:run`. Se abre en http://localhost:8084/productos
 
 ## Problemas encontrados y cómo se resolvieron
 
 | Problema | Causa | Solución |
 |---|---|---|
-| `java -version` seguía mostrando la versión 1.8 | El Java 8 anterior iba primero en el `Path` | Se ajustó `JAVA_HOME` y se puso `%JAVA_HOME%\bin` antes en el `Path` |
-| `.\mvnw.cmd` no se reconocía | Se estaba en una carpeta sin `mvnw.cmd` | Se entró a la carpeta del proyecto generado por Spring Initializr |
-| El servidor parecía "detenido" en la consola | Es normal: el servidor se queda corriendo | Se detuvo con Ctrl + C cuando ya no hacía falta |
-| Puerto accesible solo en local | El firewall del VPS solo permitía 22, 80 y 443 | Se abrió el puerto propio con `ufw allow` |
+| Los `push` iban al repositorio de la Actividad 1 | La copia del proyecto traía la carpeta `.git` original | Se borró `.git` en la copia y se hizo `git init` |
+| Las dos actividades no pueden usar el mismo puerto | Un puerto solo lo escucha un proceso | La Actividad 2 corre en otro puerto, con su propia carpeta |
+| Se detiene la actividad equivocada | `pkill java` mata todos los procesos Java | Se usa `pkill -f "server.port=[PUERTO]"` |
 
 ## Enlaces
 
-- Repositorio de esta actividad: [PEGAR LINK DE GITHUB]
-- Proyecto corriendo en el VPS: http://216.238.69.86:8082/api/proyecto
+- Repositorio de esta actividad: https://github.com/23161115-estud/ERDact2_t4
+- Proyecto en el VPS (Actividad 2): http://216.238.69.86:8084/productos
+- Actividad 1 (sigue corriendo en su puerto original): http://216.238.69.86:8082/api/proyecto
+- Repositorio de la Actividad 1: https://github.com/23161115-estud/ERDact1_t4-.git
